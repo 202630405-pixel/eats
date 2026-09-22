@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>밥먹자 - 학교 급식 방송 스마트 대시보드</title>
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <style>
+        :root {
+            --bg-color: #FFF9F4;
+            --card-bg: #FFFFFF;
+            --primary: #FF6B4A;
+            --primary-hover: #E85535;
+            --accent: #FFD15C;
+            --text-dark: #2D3436;
+            --text-muted: #636E72;
+            --border-color: #F1E2D3;
+            --radius-lg: 20px;
+            --radius-sm: 10px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            border: 2px solid var(--border-color);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03);
+            padding: 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            position: relative;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .header .badge {
+            background: var(--accent);
+            color: var(--text-dark);
+            font-size: 12px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 50px;
+        }
+
+        label {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-dark);
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            background: #FAFAFA;
+            font-size: 15px;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        input:focus, textarea:focus {
+            border-color: var(--primary);
+            background: #FFFFFF;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        button {
+            border: none;
+            border-radius: var(--radius-sm);
+            padding: 12px 18px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            flex: 2;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn-secondary {
+            background: #F1F2F6;
+            color: var(--text-dark);
+            flex: 1;
+        }
+
+        .btn-secondary:hover {
+            background: #E4E5E9;
+        }
+
+        /* 대시보드 디스플레이 영역 */
+        .dashboard {
+            background: linear-gradient(135deg, #FFF9F4 0%, #FFFFFF 100%);
+            border: 2px solid var(--primary);
+            justify-content: space-between;
+        }
+
+        .status-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #D63031;
+        }
+
+        .dot.active {
+            background: #00B894;
+            animation: pulse 1.2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.8; }
+        }
+
+        .timer-box {
+            text-align: center;
+            background: white;
+            padding: 16px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-color);
+        }
+
+        .timer-box .title {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        .timer-box .time {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .menu-display {
+            background: white;
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            border: 1px solid var(--border-color);
+        }
+
+        .menu-display h3 {
+            font-size: 15px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+
+        .menu-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .tag {
+            background: #FFF0ED;
+            color: var(--primary);
+            padding: 6px 12px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        /* 토스트 알림 메시지 */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #2D3436;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-weight: 600;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- 입력 및 제어 카드 -->
+    <div class="card">
+        <div class="header">
+            <h1>🍚 밥먹자</h1>
+            <span class="badge">학교 방송용</span>
+        </div>
+
+        <div class="form-row">
+            <div>
+                <label for="date">날짜</label>
+                <input type="date" id="date">
+            </div>
+            <div>
+                <label for="time">방송 시간</label>
+                <input type="time" id="time">
+            </div>
+        </div>
+
+        <div>
+            <label for="opening">방송 멘트 템플릿</label>
+            <select id="opening">
+                <option value="안내 말씀 드립니다. 오늘 식단 메뉴를 안내해 드립니다.">기본 오프닝 1</option>
+                <option value="즐거운 점심시간입니다! 오늘 나올 맛있고 영양 가득한 급식을 알려드립니다.">친근한 오프닝 2</option>
+            </select>
+        </div>
+
+        <div>
+            <label for="menu">오늘의 급식 메뉴</label>
+            <textarea id="menu" rows="3" placeholder="예: 차조밥, 미역국, 제육볶음, 계란말이, 배추김치"></textarea>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn-secondary" onclick="previewSpeech()">📢 미리듣기</button>
+            <button class="btn-primary" onclick="scheduleBroadcast()">⏰ 방송 예약</button>
+        </div>
+    </div>
+
+    <!-- 대시보드 및 실시간 현황 카드 -->
+    <div class="card dashboard">
+        <div class="status-header">
+            <div class="live-indicator">
+                <span class="dot" id="liveDot"></span>
+                <span id="statusText">방송 대기 중</span>
+            </div>
+            <span style="font-size: 13px; color: var(--text-muted);" id="currentClock">00:00:00</span>
+        </div>
+
+        <div class="timer-box">
+            <div class="title">다음 예정 방송 시간</div>
+            <div class="time" id="targetDisplay">미설정</div>
+        </div>
+
+        <div class="menu-display">
+            <h3>🍱 예정 급식 목록</h3>
+            <div class="menu-tags" id="menuTags">
+                <span style="color: var(--text-muted); font-size: 14px;">메뉴를 입력 후 예약을 진행해 주세요.</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="toast" class="toast">예약되었습니다!</div>
+
+<script>
+    let timerId = null;
+
+    // 현재 시계 업데이트
+    setInterval(() => {
+        const now = new Date();
+        document.getElementById('currentClock').innerText = now.toLocaleTimeString('ko-KR');
+    }, 1000);
+
+    // 오늘 날짜 자동 입력
+    document.getElementById('date').value = new Date().toISOString().substring(0, 10);
+
+    // 토스트 알림 띄우기
+    function showToast(message) {
+        const toast = document.getElementById('toast');
+        toast.innerText = message;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // 텍스트를 태그 형태로 변환하여 디스플레이에 표시
+    function updateMenuTags(menuText) {
+        const menuTagsDiv = document.getElementById('menuTags');
+        if (!menuText.trim()) return;
+
+        const items = menuText.split(',').map(item => item.trim()).filter(item => item.length > 0);
+        menuTagsDiv.innerHTML = items.map(item => `<span class="tag">${item}</span>`).join('');
+    }
+
+    // TTS 음성 합성 함수 (웹 브라우저 내장)
+    function playSpeech(text, onEndCallback) {
+        // 방송 전 간단한 오디오 차임벨 효과음 재생 (Web Audio API)
+        playChimeSound(() => {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'ko-KR';
+            utterance.rate = 0.95; // 말하는 속도
+            utterance.pitch = 1.0;
+
+            if (onEndCallback) utterance.onend = onEndCallback;
+
+            window.speechSynthesis.speak(utterance);
+        });
+    }
+
+    // 차임벨(띵동~) 효과음 생성
+    function playChimeSound(callback) {
+        try {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+            osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.15); // E5
+
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.6);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.6);
+
+            setTimeout(callback, 700);
+        } catch (e) {
+            callback();
+        }
+    }
+
+    // 미리듣기
+    function previewSpeech() {
+        const opening = document.getElementById('opening').value;
+        const menu = document.getElementById('menu').value;
+
+        if (!menu) {
+            showToast('미리듣기를 위해 급식 메뉴를 입력해 주세요.');
+            return;
+        }
+
+        const fullScript = `${opening} 오늘 메뉴는 ${menu} 입니다. 맛있는 식사 되십시오.`;
+        playSpeech(fullScript);
+    }
+
+    // 방송 예약하기
+    function scheduleBroadcast() {
+        const dateVal = document.getElementById('date').value;
+        const timeVal = document.getElementById('time').value;
+        const opening = document.getElementById('opening').value;
+        const menuVal = document.getElementById('menu').value;
+
+        if (!timeVal || !menuVal) {
+            showToast('방송 시간과 급식 메뉴를 모두 입력해 주세요.');
+            return;
+        }
+
+        const now = new Date();
+        const targetTime = new Date(`${dateVal}T${timeVal}:00`);
+        const timeDiff = targetTime - now;
+
+        if (timeDiff <= 0) {
+            showToast('현재 시각보다 이후 시간을 설정해 주세요.');
+            return;
+        }
+
+        if (timerId) clearTimeout(timerId);
+
+        // UI 상태 업데이트
+        document.getElementById('targetDisplay').innerText = timeVal;
+        document.getElementById('statusText').innerText = '방송 예약 중';
+        document.getElementById('liveDot').classList.add('active');
+        updateMenuTags(menuVal);
+
+        showToast(`${timeVal}에 방송이 예약되었습니다.`);
+
+        // 지정된 시간에 타이머 작동
+        timerId = setTimeout(() => {
+            document.getElementById('statusText').innerText = '방송 송출 중 🎙️';
+            
+            const fullScript = `${opening} 오늘 메뉴는 ${menuVal} 입니다. 맛있는 식사 되십시오.`;
+            
+            playSpeech(fullScript, () => {
+                document.getElementById('statusText').innerText = '방송 완료';
+                document.getElementById('liveDot').classList.remove('active');
+                showToast('급식 안내 방송이 완료되었습니다.');
+            });
+        }, timeDiff);
+    }
+</script>
+
+</body>
+</html>
